@@ -11,7 +11,8 @@
 
 - Start services: `docker compose up -d`
 - Services:
-  - **Kafka** (`apache/kafka:latest`) — KRaft mode, no ZooKeeper. Port `9092`.
+  - **Kafka** (`apache/kafka:latest`) — KRaft mode, no ZooKeeper. Internal port `9092`, host port `29092`.
   - **PostgreSQL 17** (`postgres:17-alpine`) — metadata store for RisingWave. Port `8432`.
   - **RisingWave v2.7.1** — standalone mode, in-memory state store (`hummock+memory`). SQL frontend on port `4566`, dashboard on port `5691`.
 - Connect to RisingWave: `psql -h localhost -p 4566 -U root -d dev`
+- Reset state (drop views/sources, delete Kafka topics): `uv run reset.py`
