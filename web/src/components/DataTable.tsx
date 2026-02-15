@@ -73,7 +73,7 @@ function QueueCard({
         } ${
           isDeleted
             ? "border-red-400 bg-red-50/80 opacity-60 dark:border-red-700 dark:bg-red-950/80"
-            : "border-foreground/20 bg-card hover:border-foreground/40"
+            : "border-foreground/20 bg-card/70 backdrop-blur-sm hover:border-primary/50 hover:shadow-[0_0_12px_-3px] hover:shadow-primary/20"
         }`}
         style={{
           width: expanded ? "220px" : "120px",
@@ -127,14 +127,18 @@ export function DataTable({ title, columns, rows, count, deletedKeys, layout = "
   }, [rows.length]);
 
   return (
-    <Card>
+    <Card className="glass-card">
       <CardHeader className="flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-base">{title}</CardTitle>
         <Badge variant="outline">{count}</Badge>
       </CardHeader>
       <CardContent>
         {rows.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No data yet</p>
+          <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="mb-2 opacity-40"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
+            <p className="text-sm">No data yet</p>
+            <p className="text-xs mt-1">Set up the pipeline and produce some events</p>
+          </div>
         ) : layout === "queue" ? (
           <div className="flex items-center gap-0">
             {/* Enqueue side label */}

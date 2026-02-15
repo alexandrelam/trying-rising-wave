@@ -66,7 +66,7 @@ function PractitionerForm({ prefill, onPrefillConsumed }: { prefill?: Practition
   }
 
   return (
-    <Card ref={formRef}>
+    <Card ref={formRef} className="glass-card border-t-2 border-t-primary hover:shadow-md transition-shadow">
       <CardHeader>
         <CardTitle>Practitioner</CardTitle>
       </CardHeader>
@@ -140,7 +140,7 @@ function TombstoneForm() {
   }
 
   return (
-    <Card>
+    <Card className="glass-card border-t-2 border-t-red-500 hover:shadow-md transition-shadow">
       <CardHeader>
         <CardTitle>Delete (Tombstone)</CardTitle>
       </CardHeader>
@@ -200,7 +200,7 @@ function SpecialityForm() {
   }
 
   return (
-    <Card>
+    <Card className="glass-card border-t-2 border-t-teal-500 hover:shadow-md transition-shadow">
       <CardHeader>
         <CardTitle>Speciality</CardTitle>
       </CardHeader>

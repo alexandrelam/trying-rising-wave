@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { subscribeEvents, type PipelineEvent } from "@/lib/api";
+import { useSSEConnection, type PipelineEvent, type SSEStatus } from "@/lib/api";
 import { DataTable } from "./DataTable";
 import { EventLog } from "./EventLog";
 
@@ -26,14 +26,17 @@ const TABLES = [
 
 interface PipelineViewProps {
   onUpdate?: (data: { id: string; name: string; email: string; specialityIds: string }) => void;
+  onSSEStatusChange?: (status: SSEStatus) => void;
 }
 
-export function PipelineView({ onUpdate }: PipelineViewProps) {
+export function PipelineView({ onUpdate, onSSEStatusChange }: PipelineViewProps) {
   const [data, setData] = useState<PipelineEvent>({});
 
+  const sseStatus = useSSEConnection(setData);
+
   useEffect(() => {
-    return subscribeEvents(setData);
-  }, []);
+    onSSEStatusChange?.(sseStatus);
+  }, [sseStatus, onSSEStatusChange]);
 
   const eventLog = data.event_log ?? [];
 

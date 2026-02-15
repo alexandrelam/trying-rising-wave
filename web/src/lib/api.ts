@@ -1,3 +1,5 @@
+import { useEffect, useRef, useState } from "react";
+
 const BASE = import.meta.env.VITE_API_BASE ?? "/api";
 
 export async function setupPipeline() {
@@ -72,4 +74,32 @@ export function subscribeEvents(callback: (data: PipelineEvent) => void) {
     callback(JSON.parse(e.data));
   });
   return () => es.close();
+}
+
+export type SSEStatus = "connected" | "disconnected" | "loading";
+
+export function useSSEConnection(callback: (data: PipelineEvent) => void) {
+  const [status, setStatus] = useState<SSEStatus>("loading");
+  const cbRef = useRef(callback);
+  cbRef.current = callback;
+
+  useEffect(() => {
+    const es = new EventSource(`${BASE}/events`);
+
+    es.addEventListener("pipeline", (e) => {
+      cbRef.current(JSON.parse(e.data));
+    });
+
+    es.onopen = () => setStatus("connected");
+    es.onerror = () => {
+      setStatus(es.readyState === EventSource.CONNECTING ? "loading" : "disconnected");
+    };
+
+    return () => {
+      es.close();
+      setStatus("disconnected");
+    };
+  }, []);
+
+  return status;
 }

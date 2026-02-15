@@ -1,30 +1,21 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { setupPipeline, resetPipeline, seedPipeline, getPipelineStatus } from "@/lib/api";
+import { setupPipeline, resetPipeline, seedPipeline } from "@/lib/api";
 import { toast } from "sonner";
 
-export function PipelineControls() {
-  const [status, setStatus] = useState<{
-    sources: string[];
-    materialized_views: string[];
-  } | null>(null);
-  const [loading, setLoading] = useState<string | null>(null);
+interface PipelineControlsProps {
+  onStatusChange?: () => void;
+}
 
-  async function refreshStatus() {
-    try {
-      setStatus(await getPipelineStatus());
-    } catch {
-      /* pipeline not ready */
-    }
-  }
+export function PipelineControls({ onStatusChange }: PipelineControlsProps) {
+  const [loading, setLoading] = useState<string | null>(null);
 
   async function handleSetup() {
     setLoading("setup");
     try {
       await setupPipeline();
       toast.success("Pipeline created");
-      await refreshStatus();
+      onStatusChange?.();
     } catch {
       toast.error("Setup failed");
     } finally {
@@ -49,7 +40,7 @@ export function PipelineControls() {
     try {
       await resetPipeline();
       toast.success("Pipeline reset");
-      setStatus(null);
+      onStatusChange?.();
     } catch {
       toast.error("Reset failed");
     } finally {
@@ -58,20 +49,7 @@ export function PipelineControls() {
   }
 
   return (
-    <div className="flex items-center gap-4">
-      <h1 className="text-2xl font-bold mr-auto">
-        Kafka → RisingWave Pipeline
-      </h1>
-      {status && (
-        <div className="flex gap-2">
-          <Badge variant="secondary">
-            {status.sources.length} sources
-          </Badge>
-          <Badge variant="secondary">
-            {status.materialized_views.length} MVs
-          </Badge>
-        </div>
-      )}
+    <div className="flex items-center gap-3">
       <Button onClick={handleSetup} disabled={loading !== null}>
         {loading === "setup" ? "Setting up…" : "Setup"}
       </Button>

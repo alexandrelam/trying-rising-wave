@@ -5,6 +5,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Activity } from "lucide-react";
 import type { EventLogEntry } from "@/lib/api";
 
 interface EventLogProps {
@@ -13,22 +14,26 @@ interface EventLogProps {
 
 export function EventLog({ events }: EventLogProps) {
   return (
-    <Card>
+    <Card className="glass-card">
       <CardHeader>
         <CardTitle className="text-base">Event Log</CardTitle>
       </CardHeader>
       <CardContent>
         {events.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No events yet</p>
+          <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
+            <Activity className="h-8 w-8 mb-2 opacity-40" />
+            <p className="text-sm">No events yet</p>
+            <p className="text-xs mt-1">Events will appear here as data flows through the pipeline</p>
+          </div>
         ) : (
           <div className="space-y-2 max-h-80 overflow-y-auto">
             {[...events].reverse().map((evt, i) => (
               <div
                 key={i}
-                className={`flex items-start gap-2 rounded-md border p-2 text-sm ${
+                className={`flex items-start gap-2 rounded-md border-l-4 bg-card/50 p-2 text-sm animate-[slide-in-up_0.2s_ease-out] ${
                   evt.type === "TOMBSTONE"
-                    ? "border-red-300 bg-red-50 dark:border-red-800 dark:bg-red-950"
-                    : "border-green-300 bg-green-50 dark:border-green-800 dark:bg-green-950"
+                    ? "border-l-red-500"
+                    : "border-l-emerald-500"
                 }`}
               >
                 <Badge
