@@ -1,4 +1,4 @@
-const BASE = "http://localhost:8000/api";
+const BASE = import.meta.env.VITE_API_BASE ?? "/api";
 
 export async function setupPipeline() {
   const res = await fetch(`${BASE}/pipeline/setup`, { method: "POST" });

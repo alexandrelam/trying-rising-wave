@@ -1,8 +1,13 @@
+import os
+
 import psycopg2
+
+RW_HOST = os.environ.get("RW_HOST", "localhost")
+RW_PORT = int(os.environ.get("RW_PORT", "4566"))
 
 
 def get_conn():
-    conn = psycopg2.connect(host="localhost", port=4566, user="root", dbname="dev")
+    conn = psycopg2.connect(host=RW_HOST, port=RW_PORT, user="root", dbname="dev")
     conn.autocommit = True
     return conn
 

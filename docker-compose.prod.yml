@@ -1,0 +1,89 @@
+services:
+  kafka:
+    image: apache/kafka:latest
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      CLUSTER_ID: "MkU3OEVBNTcwNTJENDM2Qk"
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: trust
+      POSTGRES_DB: metadata
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  risingwave:
+    image: risingwavelabs/risingwave:v2.7.1
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    environment:
+      RUST_BACKTRACE: "1"
+      ENABLE_TELEMETRY: "false"
+    command:
+      - standalone
+      - --meta-opts=--listen-addr 0.0.0.0:5690 --advertise-addr risingwave:5690 --sql-endpoint postgres://postgres@postgres:5432/metadata --state-store hummock+memory --data-directory hummock_001 --backend sql
+      - --compute-opts=--listen-addr 0.0.0.0:5688 --advertise-addr risingwave:5688 --async-stack-trace verbose --parallelism 4 --total-memory-bytes 2147483648 --role both --meta-address http://0.0.0.0:5690
+      - --frontend-opts=--listen-addr 0.0.0.0:4566 --advertise-addr risingwave:4566 --meta-addr http://0.0.0.0:5690
+      - --compactor-opts=--listen-addr 0.0.0.0:6660 --advertise-addr risingwave:6660 --meta-address http://0.0.0.0:5690
+    volumes:
+      - risingwave-data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "psql -h localhost -p 4566 -U root -d dev -c 'SELECT 1' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  backend:
+    build: ./backend
+    depends_on:
+      risingwave:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    environment:
+      RW_HOST: risingwave
+      RW_PORT: "4566"
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      CORS_ORIGINS: "*"
+    expose:
+      - "8000"
+
+  frontend:
+    build:
+      context: .
+      dockerfile: web/Dockerfile
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+
+volumes:
+  kafka-data:
+  postgres-data:
+  risingwave-data:

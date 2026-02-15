@@ -1,11 +1,12 @@
 import json
+import os
 from datetime import datetime, timezone
 from confluent_kafka import Producer
 from confluent_kafka.admin import AdminClient, NewTopic
 
 from app.event_log import log_event
 
-BOOTSTRAP_SERVERS = "localhost:29092"
+BOOTSTRAP_SERVERS = os.environ.get("KAFKA_BOOTSTRAP_SERVERS", "localhost:29092")
 
 _producer = None
 
