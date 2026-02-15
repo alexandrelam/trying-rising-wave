@@ -24,6 +24,7 @@ export async function createPractitioner(data: {
   id: number;
   name: string;
   email: string;
+  speciality_ids: number[];
 }) {
   const res = await fetch(`${BASE}/practitioners`, {
     method: "POST",
@@ -33,10 +34,7 @@ export async function createPractitioner(data: {
   return res.json();
 }
 
-export async function createSpeciality(data: {
-  practitioner_id: number;
-  speciality: string;
-}) {
+export async function createSpeciality(data: { id: number; name: string }) {
   const res = await fetch(`${BASE}/specialities`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -47,6 +45,11 @@ export async function createSpeciality(data: {
 
 export async function deletePractitioner(id: number) {
   const res = await fetch(`${BASE}/practitioners/${id}`, { method: "DELETE" });
+  return res.json();
+}
+
+export async function deleteSpeciality(id: number) {
+  const res = await fetch(`${BASE}/specialities/${id}`, { method: "DELETE" });
   return res.json();
 }
 

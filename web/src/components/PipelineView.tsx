@@ -7,12 +7,12 @@ const TABLES = [
   {
     key: "practitioners_mv",
     title: "Practitioners",
-    columns: ["id", "name", "email", "created_at"],
+    columns: ["id", "name", "email", "speciality_ids", "created_at"],
   },
   {
     key: "specialities_mv",
     title: "Specialities",
-    columns: ["practitioner_id", "speciality", "created_at"],
+    columns: ["id", "name"],
   },
   {
     key: "practitioners_with_specialities",

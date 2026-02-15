@@ -8,7 +8,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { createPractitioner, createSpeciality, deletePractitioner } from "@/lib/api";
+import { createPractitioner, createSpeciality, deletePractitioner, deleteSpeciality } from "@/lib/api";
 import { toast } from "sonner";
 
 export function ProducerForms() {
@@ -25,15 +25,22 @@ function PractitionerForm() {
   const [id, setId] = useState("");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [specialityIds, setSpecialityIds] = useState("");
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     try {
-      await createPractitioner({ id: Number(id), name, email });
+      const ids = specialityIds
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean)
+        .map(Number);
+      await createPractitioner({ id: Number(id), name, email, speciality_ids: ids });
       toast.success(`Produced practitioner ${name}`);
       setId("");
       setName("");
       setEmail("");
+      setSpecialityIds("");
     } catch {
       toast.error("Failed to produce practitioner");
     }
@@ -75,6 +82,15 @@ function PractitionerForm() {
               required
             />
           </div>
+          <div>
+            <Label htmlFor="p-sids">Speciality IDs (comma-separated)</Label>
+            <Input
+              id="p-sids"
+              value={specialityIds}
+              onChange={(e) => setSpecialityIds(e.target.value)}
+              placeholder="1, 2, 3"
+            />
+          </div>
           <Button type="submit" className="w-full">
             Produce
           </Button>
@@ -86,12 +102,18 @@ function PractitionerForm() {
 
 function TombstoneForm() {
   const [id, setId] = useState("");
+  const [topic, setTopic] = useState<"practitioner" | "speciality">("practitioner");
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     try {
-      await deletePractitioner(Number(id));
-      toast.success(`Tombstone produced for practitioner ${id}`);
+      if (topic === "practitioner") {
+        await deletePractitioner(Number(id));
+        toast.success(`Tombstone produced for practitioner ${id}`);
+      } else {
+        await deleteSpeciality(Number(id));
+        toast.success(`Tombstone produced for speciality ${id}`);
+      }
       setId("");
     } catch {
       toast.error("Failed to produce tombstone");
@@ -105,8 +127,26 @@ function TombstoneForm() {
       </CardHeader>
       <CardContent>
         <form onSubmit={onSubmit} className="space-y-3">
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              variant={topic === "practitioner" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setTopic("practitioner")}
+            >
+              Practitioner
+            </Button>
+            <Button
+              type="button"
+              variant={topic === "speciality" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setTopic("speciality")}
+            >
+              Speciality
+            </Button>
+          </div>
           <div>
-            <Label htmlFor="t-id">Practitioner ID</Label>
+            <Label htmlFor="t-id">{topic === "practitioner" ? "Practitioner" : "Speciality"} ID</Label>
             <Input
               id="t-id"
               type="number"
@@ -125,19 +165,16 @@ function TombstoneForm() {
 }
 
 function SpecialityForm() {
-  const [practitionerId, setPractitionerId] = useState("");
-  const [speciality, setSpeciality] = useState("");
+  const [id, setId] = useState("");
+  const [name, setName] = useState("");
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     try {
-      await createSpeciality({
-        practitioner_id: Number(practitionerId),
-        speciality,
-      });
-      toast.success(`Produced speciality "${speciality}"`);
-      setPractitionerId("");
-      setSpeciality("");
+      await createSpeciality({ id: Number(id), name });
+      toast.success(`Produced speciality "${name}"`);
+      setId("");
+      setName("");
     } catch {
       toast.error("Failed to produce speciality");
     }
@@ -151,21 +188,21 @@ function SpecialityForm() {
       <CardContent>
         <form onSubmit={onSubmit} className="space-y-3">
           <div>
-            <Label htmlFor="s-pid">Practitioner ID</Label>
+            <Label htmlFor="s-id">ID</Label>
             <Input
-              id="s-pid"
+              id="s-id"
               type="number"
-              value={practitionerId}
-              onChange={(e) => setPractitionerId(e.target.value)}
+              value={id}
+              onChange={(e) => setId(e.target.value)}
               required
             />
           </div>
           <div>
-            <Label htmlFor="s-spec">Speciality</Label>
+            <Label htmlFor="s-name">Name</Label>
             <Input
-              id="s-spec"
-              value={speciality}
-              onChange={(e) => setSpeciality(e.target.value)}
+              id="s-name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
               required
             />
           </div>

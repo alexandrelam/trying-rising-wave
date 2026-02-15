@@ -10,6 +10,7 @@ class Practitioner(BaseModel):
     id: int
     name: str
     email: str
+    speciality_ids: list[int] = []
 
 
 @router.post("/practitioners")
