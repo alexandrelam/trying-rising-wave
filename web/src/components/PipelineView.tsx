@@ -8,16 +8,19 @@ const TABLES = [
     key: "practitioners_mv",
     title: "Practitioners",
     columns: ["id", "name", "email", "speciality_ids", "created_at"],
+    layout: "queue" as const,
   },
   {
     key: "specialities_mv",
     title: "Specialities",
     columns: ["id", "name"],
+    layout: "queue" as const,
   },
   {
     key: "practitioners_with_specialities",
     title: "Joined View",
     columns: ["id", "name", "email", "specialities", "created_at"],
+    layout: "table" as const,
   },
 ] as const;
 
@@ -54,6 +57,7 @@ export function PipelineView() {
           rows={data[t.key]?.latest ?? []}
           count={data[t.key]?.count ?? 0}
           deletedKeys={t.key === "practitioners_mv" ? deletedKeys : undefined}
+          layout={t.layout}
         />
       ))}
       <EventLog events={eventLog} />

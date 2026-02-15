@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -37,9 +37,71 @@ interface DataTableProps {
   rows: Record<string, unknown>[];
   count: number;
   deletedKeys?: Set<string>;
+  layout?: "table" | "queue";
 }
 
-export function DataTable({ title, columns, rows, count, deletedKeys }: DataTableProps) {
+function QueueCard({
+  row,
+  columns,
+  isDeleted,
+}: {
+  row: Record<string, unknown>;
+  columns: string[];
+  isDeleted: boolean;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const name = String(row["name"] ?? row["id"] ?? "");
+  const id = String(row["id"] ?? "");
+
+  return (
+    <div
+      className="shrink-0 animate-[slide-in-right_0.3s_ease-out]"
+      onMouseEnter={() => setExpanded(true)}
+      onMouseLeave={() => setExpanded(false)}
+    >
+      <div
+        className={`flex cursor-pointer flex-col gap-1 rounded-lg border p-3 text-sm transition-all duration-200 ${
+          expanded ? "shadow-lg" : ""
+        } ${
+          isDeleted
+            ? "border-red-300 bg-red-50 opacity-60 dark:border-red-800 dark:bg-red-950"
+            : "border-border bg-card"
+        }`}
+        style={{ width: expanded ? "240px" : "150px", transition: "width 0.2s ease, box-shadow 0.2s ease" }}
+      >
+        <span className={`font-semibold truncate ${isDeleted ? "line-through" : ""}`}>
+          {name}
+        </span>
+        <span className="text-xs text-muted-foreground">#{id}</span>
+        {isDeleted && (
+          <Badge variant="destructive" className="text-xs w-fit">deleted</Badge>
+        )}
+
+        {expanded && (
+          <div className="mt-1 border-t pt-1.5 space-y-0.5 animate-[fade-in_0.15s_ease-out]">
+            {columns.filter((col) => col !== "id" && col !== "name").map((col) => (
+              <div key={col} className="flex flex-col">
+                <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">{col}</span>
+                <span className="text-xs break-all">{React.isValidElement(formatCell(row[col])) ? formatCell(row[col]) : String(row[col] ?? "")}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export function DataTable({ title, columns, rows, count, deletedKeys, layout = "table" }: DataTableProps) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (el) {
+      el.scrollLeft = el.scrollWidth;
+    }
+  }, [rows.length]);
+
   return (
     <Card>
       <CardHeader className="flex-row items-center justify-between space-y-0 pb-2">
@@ -49,6 +111,14 @@ export function DataTable({ title, columns, rows, count, deletedKeys }: DataTabl
       <CardContent>
         {rows.length === 0 ? (
           <p className="text-sm text-muted-foreground">No data yet</p>
+        ) : layout === "queue" ? (
+          <div ref={scrollRef} className="flex gap-2 overflow-x-auto pb-2">
+            {rows.map((row, i) => {
+              const key = String(row["id"] ?? row["practitioner_id"] ?? i);
+              const isDeleted = deletedKeys?.has(key) ?? false;
+              return <QueueCard key={key} row={row} columns={columns} isDeleted={isDeleted} />;
+            })}
+          </div>
         ) : (
           <Table>
             <TableHeader>
