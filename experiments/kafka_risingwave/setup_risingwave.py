@@ -3,9 +3,10 @@ import psycopg2
 
 SOURCES = [
     """
-    CREATE SOURCE IF NOT EXISTS practitioners_source (id INT, name VARCHAR, email VARCHAR)
+    CREATE TABLE IF NOT EXISTS practitioners_source (id INT, name VARCHAR, email VARCHAR, PRIMARY KEY (rw_key))
+    INCLUDE key AS rw_key
     WITH (connector='kafka', topic='practitioners', properties.bootstrap.server='kafka:9092')
-    FORMAT PLAIN ENCODE JSON
+    FORMAT UPSERT ENCODE JSON
     """,
     """
     CREATE SOURCE IF NOT EXISTS specialities_source (practitioner_id INT, speciality VARCHAR)
@@ -15,7 +16,7 @@ SOURCES = [
 ]
 
 MATERIALIZED_VIEWS = [
-    "CREATE MATERIALIZED VIEW IF NOT EXISTS practitioners_mv AS SELECT * FROM practitioners_source",
+    "CREATE MATERIALIZED VIEW IF NOT EXISTS practitioners_mv AS SELECT id, name, email FROM practitioners_source",
     "CREATE MATERIALIZED VIEW IF NOT EXISTS specialities_mv AS SELECT * FROM specialities_source",
     """
     CREATE MATERIALIZED VIEW IF NOT EXISTS practitioners_with_specialities AS

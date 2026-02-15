@@ -7,9 +7,10 @@ router = APIRouter()
 
 SOURCES_SQL = [
     """
-    CREATE SOURCE IF NOT EXISTS practitioners_source (id INT, name VARCHAR, email VARCHAR)
+    CREATE TABLE IF NOT EXISTS practitioners_source (id INT, name VARCHAR, email VARCHAR, PRIMARY KEY (rw_key))
+    INCLUDE key AS rw_key
     WITH (connector='kafka', topic='practitioners', properties.bootstrap.server='kafka:9092')
-    FORMAT PLAIN ENCODE JSON
+    FORMAT UPSERT ENCODE JSON
     """,
     """
     CREATE SOURCE IF NOT EXISTS specialities_source (practitioner_id INT, speciality VARCHAR)
@@ -19,7 +20,7 @@ SOURCES_SQL = [
 ]
 
 MVS_SQL = [
-    "CREATE MATERIALIZED VIEW IF NOT EXISTS practitioners_mv AS SELECT * FROM practitioners_source",
+    "CREATE MATERIALIZED VIEW IF NOT EXISTS practitioners_mv AS SELECT id, name, email FROM practitioners_source",
     "CREATE MATERIALIZED VIEW IF NOT EXISTS specialities_mv AS SELECT * FROM specialities_source",
     """
     CREATE MATERIALIZED VIEW IF NOT EXISTS practitioners_with_specialities AS
@@ -33,6 +34,7 @@ DROP_SQL = [
     "DROP MATERIALIZED VIEW IF EXISTS practitioners_with_specialities CASCADE",
     "DROP MATERIALIZED VIEW IF EXISTS practitioners_mv CASCADE",
     "DROP MATERIALIZED VIEW IF EXISTS specialities_mv CASCADE",
+    "DROP TABLE IF EXISTS practitioners_source CASCADE",
     "DROP SOURCE IF EXISTS practitioners_source CASCADE",
     "DROP SOURCE IF EXISTS specialities_source CASCADE",
 ]
@@ -110,7 +112,7 @@ def pipeline_status():
 
 @router.get("/sources/practitioners")
 def source_practitioners():
-    return query_rows("SELECT * FROM practitioners_source")
+    return query_rows("SELECT id, name, email FROM practitioners_source")
 
 
 @router.get("/sources/specialities")
