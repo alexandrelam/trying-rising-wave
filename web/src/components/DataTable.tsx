@@ -122,11 +122,11 @@ export function DataTable({ title, columns, rows, count, deletedKeys, layout = "
           <p className="text-sm text-muted-foreground">No data yet</p>
         ) : layout === "queue" ? (
           <div className="flex items-center gap-0">
-            {/* Dequeue side label */}
+            {/* Enqueue side label */}
             <div className="flex flex-col items-center shrink-0 mr-1">
-              <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground mb-1">dequeue</span>
+              <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground mb-1">enqueue</span>
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-muted-foreground">
-                <path d="M19 12H5M5 12L11 6M5 12L11 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M5 12H19M19 12L13 6M19 12L13 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </div>
 
@@ -135,12 +135,12 @@ export function DataTable({ title, columns, rows, count, deletedKeys, layout = "
 
             {/* Queue body */}
             <div ref={scrollRef} className="flex items-center overflow-x-auto py-3 px-1">
-              {rows.map((row, i) => {
+              {[...rows].reverse().map((row, i) => {
                 const key = String(row["id"] ?? row["practitioner_id"] ?? i);
                 const isDeleted = deletedKeys?.has(key) ?? false;
                 return (
                   <React.Fragment key={key}>
-                    <QueueCard row={row} columns={columns} isDeleted={isDeleted} index={i} />
+                    <QueueCard row={row} columns={columns} isDeleted={isDeleted} index={rows.length - 1 - i} />
                     {i < rows.length - 1 && (
                       <svg width="20" height="16" viewBox="0 0 20 16" fill="none" className="shrink-0 text-muted-foreground/50 mx-0.5">
                         <path d="M0 8H16M16 8L10 2M16 8L10 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -154,9 +154,9 @@ export function DataTable({ title, columns, rows, count, deletedKeys, layout = "
             {/* Queue bracket right */}
             <div className="w-2 shrink-0 self-stretch border-y-2 border-r-2 border-dashed border-muted-foreground/40 rounded-r-md" />
 
-            {/* Enqueue side label */}
+            {/* Dequeue side label */}
             <div className="flex flex-col items-center shrink-0 ml-1">
-              <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground mb-1">enqueue</span>
+              <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground mb-1">dequeue</span>
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-muted-foreground">
                 <path d="M5 12H19M19 12L13 6M19 12L13 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
