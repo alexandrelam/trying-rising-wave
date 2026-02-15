@@ -44,10 +44,12 @@ function QueueCard({
   row,
   columns,
   isDeleted,
+  index,
 }: {
   row: Record<string, unknown>;
   columns: string[];
   isDeleted: boolean;
+  index: number;
 }) {
   const [expanded, setExpanded] = useState(false);
   const name = String(row["name"] ?? row["id"] ?? "");
@@ -55,34 +57,41 @@ function QueueCard({
 
   return (
     <div
-      className="shrink-0 animate-[slide-in-right_0.3s_ease-out]"
+      className="shrink-0 animate-[slide-in-right_0.3s_ease-out] flex flex-col items-center"
       onMouseEnter={() => setExpanded(true)}
       onMouseLeave={() => setExpanded(false)}
     >
+      {/* Index label like array notation */}
+      <span className="text-[10px] font-mono text-muted-foreground/60 mb-0.5">[{index}]</span>
+
       <div
-        className={`flex cursor-pointer flex-col gap-1 rounded-lg border p-3 text-sm transition-all duration-200 ${
-          expanded ? "shadow-lg" : ""
+        className={`flex cursor-pointer flex-col items-center justify-center border-2 transition-all duration-200 ${
+          expanded ? "shadow-lg bg-accent" : ""
         } ${
           isDeleted
-            ? "border-red-300 bg-red-50 opacity-60 dark:border-red-800 dark:bg-red-950"
-            : "border-border bg-card"
+            ? "border-red-400 bg-red-50/80 opacity-60 dark:border-red-700 dark:bg-red-950/80"
+            : "border-foreground/20 bg-card hover:border-foreground/40"
         }`}
-        style={{ width: expanded ? "240px" : "150px", transition: "width 0.2s ease, box-shadow 0.2s ease" }}
+        style={{
+          width: expanded ? "220px" : "120px",
+          minHeight: "56px",
+          transition: "width 0.2s ease, box-shadow 0.2s ease",
+        }}
       >
-        <span className={`font-semibold truncate ${isDeleted ? "line-through" : ""}`}>
+        <span className={`font-mono font-semibold text-sm truncate px-2 ${isDeleted ? "line-through" : ""}`}>
           {name}
         </span>
-        <span className="text-xs text-muted-foreground">#{id}</span>
+        <span className="font-mono text-[10px] text-muted-foreground">id:{id}</span>
         {isDeleted && (
-          <Badge variant="destructive" className="text-xs w-fit">deleted</Badge>
+          <Badge variant="destructive" className="text-[10px] mt-0.5 px-1 py-0">DEL</Badge>
         )}
 
         {expanded && (
-          <div className="mt-1 border-t pt-1.5 space-y-0.5 animate-[fade-in_0.15s_ease-out]">
+          <div className="mt-1.5 border-t border-dashed border-foreground/20 pt-1.5 pb-1 px-2 w-full space-y-0.5 animate-[fade-in_0.15s_ease-out]">
             {columns.filter((col) => col !== "id" && col !== "name").map((col) => (
               <div key={col} className="flex flex-col">
-                <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">{col}</span>
-                <span className="text-xs break-all">{React.isValidElement(formatCell(row[col])) ? formatCell(row[col]) : String(row[col] ?? "")}</span>
+                <span className="text-[9px] font-mono text-muted-foreground">{col}:</span>
+                <span className="text-[11px] font-mono break-all">{React.isValidElement(formatCell(row[col])) ? formatCell(row[col]) : String(row[col] ?? "")}</span>
               </div>
             ))}
           </div>
@@ -112,12 +121,46 @@ export function DataTable({ title, columns, rows, count, deletedKeys, layout = "
         {rows.length === 0 ? (
           <p className="text-sm text-muted-foreground">No data yet</p>
         ) : layout === "queue" ? (
-          <div ref={scrollRef} className="flex gap-2 overflow-x-auto pb-2">
-            {rows.map((row, i) => {
-              const key = String(row["id"] ?? row["practitioner_id"] ?? i);
-              const isDeleted = deletedKeys?.has(key) ?? false;
-              return <QueueCard key={key} row={row} columns={columns} isDeleted={isDeleted} />;
-            })}
+          <div className="flex items-center gap-0">
+            {/* Dequeue side label */}
+            <div className="flex flex-col items-center shrink-0 mr-1">
+              <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground mb-1">dequeue</span>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-muted-foreground">
+                <path d="M19 12H5M5 12L11 6M5 12L11 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
+
+            {/* Queue bracket left */}
+            <div className="w-2 shrink-0 self-stretch border-y-2 border-l-2 border-dashed border-muted-foreground/40 rounded-l-md" />
+
+            {/* Queue body */}
+            <div ref={scrollRef} className="flex items-center overflow-x-auto py-3 px-1">
+              {rows.map((row, i) => {
+                const key = String(row["id"] ?? row["practitioner_id"] ?? i);
+                const isDeleted = deletedKeys?.has(key) ?? false;
+                return (
+                  <React.Fragment key={key}>
+                    <QueueCard row={row} columns={columns} isDeleted={isDeleted} index={i} />
+                    {i < rows.length - 1 && (
+                      <svg width="20" height="16" viewBox="0 0 20 16" fill="none" className="shrink-0 text-muted-foreground/50 mx-0.5">
+                        <path d="M0 8H16M16 8L10 2M16 8L10 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    )}
+                  </React.Fragment>
+                );
+              })}
+            </div>
+
+            {/* Queue bracket right */}
+            <div className="w-2 shrink-0 self-stretch border-y-2 border-r-2 border-dashed border-muted-foreground/40 rounded-r-md" />
+
+            {/* Enqueue side label */}
+            <div className="flex flex-col items-center shrink-0 ml-1">
+              <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground mb-1">enqueue</span>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-muted-foreground">
+                <path d="M5 12H19M19 12L13 6M19 12L13 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
           </div>
         ) : (
           <Table>
