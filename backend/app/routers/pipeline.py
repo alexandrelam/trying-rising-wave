@@ -7,24 +7,24 @@ router = APIRouter()
 
 SOURCES_SQL = [
     """
-    CREATE TABLE IF NOT EXISTS practitioners_source (id INT, name VARCHAR, email VARCHAR, PRIMARY KEY (rw_key))
+    CREATE TABLE IF NOT EXISTS practitioners_source (id INT, name VARCHAR, email VARCHAR, created_at TIMESTAMPTZ, PRIMARY KEY (rw_key))
     INCLUDE key AS rw_key
     WITH (connector='kafka', topic='practitioners', properties.bootstrap.server='kafka:9092')
     FORMAT UPSERT ENCODE JSON
     """,
     """
-    CREATE SOURCE IF NOT EXISTS specialities_source (practitioner_id INT, speciality VARCHAR)
+    CREATE SOURCE IF NOT EXISTS specialities_source (practitioner_id INT, speciality VARCHAR, created_at TIMESTAMPTZ)
     WITH (connector='kafka', topic='specialities', properties.bootstrap.server='kafka:9092')
     FORMAT PLAIN ENCODE JSON
     """,
 ]
 
 MVS_SQL = [
-    "CREATE MATERIALIZED VIEW IF NOT EXISTS practitioners_mv AS SELECT id, name, email FROM practitioners_source",
+    "CREATE MATERIALIZED VIEW IF NOT EXISTS practitioners_mv AS SELECT id, name, email, created_at FROM practitioners_source",
     "CREATE MATERIALIZED VIEW IF NOT EXISTS specialities_mv AS SELECT * FROM specialities_source",
     """
     CREATE MATERIALIZED VIEW IF NOT EXISTS practitioners_with_specialities AS
-    SELECT p.id, p.name, p.email, jsonb_agg(s.speciality ORDER BY s.speciality) AS specialities
+    SELECT p.id, p.name, p.email, jsonb_agg(s.speciality ORDER BY s.speciality) AS specialities, max(p.created_at) AS created_at
     FROM practitioners_mv p
     JOIN specialities_mv s ON p.id = s.practitioner_id
     GROUP BY p.id, p.name, p.email
@@ -113,7 +113,7 @@ def pipeline_status():
 
 @router.get("/sources/practitioners")
 def source_practitioners():
-    return query_rows("SELECT id, name, email FROM practitioners_source")
+    return query_rows("SELECT id, name, email, created_at FROM practitioners_source")
 
 
 @router.get("/sources/specialities")
@@ -123,16 +123,16 @@ def source_specialities():
 
 @router.get("/views/practitioners")
 def view_practitioners():
-    return query_rows("SELECT * FROM practitioners_mv ORDER BY id")
+    return query_rows("SELECT id, name, email, created_at FROM practitioners_mv ORDER BY created_at DESC")
 
 
 @router.get("/views/specialities")
 def view_specialities():
-    return query_rows("SELECT * FROM specialities_mv ORDER BY practitioner_id")
+    return query_rows("SELECT practitioner_id, speciality, created_at FROM specialities_mv ORDER BY created_at DESC")
 
 
 @router.get("/views/joined")
 def view_joined():
     return query_rows(
-        "SELECT id, name, email, specialities FROM practitioners_with_specialities ORDER BY id"
+        "SELECT id, name, email, specialities, created_at FROM practitioners_with_specialities ORDER BY created_at DESC"
     )

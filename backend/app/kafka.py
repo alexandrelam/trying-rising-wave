@@ -1,4 +1,5 @@
 import json
+from datetime import datetime, timezone
 from confluent_kafka import Producer
 from confluent_kafka.admin import AdminClient, NewTopic
 
@@ -18,14 +19,15 @@ def get_producer() -> Producer:
 
 def produce_message(topic: str, key: str, value: dict):
     producer = get_producer()
-    producer.produce(topic, key=key, value=json.dumps(value))
+    value = {**value, "created_at": datetime.now(timezone.utc).isoformat()}
+    producer.produce(topic, key=key.encode(), value=json.dumps(value).encode())
     producer.flush()
     log_event("INSERT", topic, key, value)
 
 
 def produce_tombstone(topic: str, key: str):
     producer = get_producer()
-    producer.produce(topic, key=key, value=None)
+    producer.produce(topic, key=key.encode(), value=None)
     producer.flush()
     log_event("TOMBSTONE", topic, key, None)
 

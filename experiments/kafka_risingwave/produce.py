@@ -1,4 +1,5 @@
 import json
+from datetime import datetime, timezone
 from confluent_kafka import Producer
 
 
@@ -42,10 +43,11 @@ def produce():
 
     print("Producing practitioners...")
     for p in PRACTITIONERS:
+        msg = {**p, "created_at": datetime.now(timezone.utc).isoformat()}
         producer.produce(
             "practitioners",
             key=str(p["id"]),
-            value=json.dumps(p),
+            value=json.dumps(msg),
             callback=delivery_report,
         )
     producer.flush()
@@ -53,10 +55,11 @@ def produce():
 
     print("Producing specialities...")
     for s in SPECIALITIES:
+        msg = {**s, "created_at": datetime.now(timezone.utc).isoformat()}
         producer.produce(
             "specialities",
             key=str(s["practitioner_id"]),
-            value=json.dumps(s),
+            value=json.dumps(msg),
             callback=delivery_report,
         )
     producer.flush()

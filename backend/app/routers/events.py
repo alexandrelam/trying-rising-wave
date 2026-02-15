@@ -16,9 +16,9 @@ def get_counts_and_latest():
     result = {}
 
     tables = {
-        "practitioners_mv": "SELECT * FROM practitioners_mv ORDER BY id DESC LIMIT 5",
-        "specialities_mv": "SELECT * FROM specialities_mv ORDER BY practitioner_id DESC LIMIT 5",
-        "practitioners_with_specialities": "SELECT * FROM practitioners_with_specialities ORDER BY id DESC LIMIT 5",
+        "practitioners_mv": "SELECT id, name, email, created_at FROM practitioners_mv ORDER BY created_at DESC",
+        "specialities_mv": "SELECT practitioner_id, speciality, created_at FROM specialities_mv ORDER BY created_at DESC",
+        "practitioners_with_specialities": "SELECT id, name, email, specialities, created_at FROM practitioners_with_specialities ORDER BY created_at DESC",
     }
 
     for name, sql in tables.items():
@@ -44,7 +44,7 @@ async def event_generator():
         except Exception:
             data = {}
         data["event_log"] = get_events()
-        yield {"event": "pipeline", "data": json.dumps(data)}
+        yield {"event": "pipeline", "data": json.dumps(data, default=str)}
         await asyncio.sleep(2)
 
 

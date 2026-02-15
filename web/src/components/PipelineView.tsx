@@ -7,17 +7,17 @@ const TABLES = [
   {
     key: "practitioners_mv",
     title: "Practitioners",
-    columns: ["id", "name", "email"],
+    columns: ["id", "name", "email", "created_at"],
   },
   {
     key: "specialities_mv",
     title: "Specialities",
-    columns: ["practitioner_id", "speciality"],
+    columns: ["practitioner_id", "speciality", "created_at"],
   },
   {
     key: "practitioners_with_specialities",
     title: "Joined View",
-    columns: ["id", "name", "email", "specialities"],
+    columns: ["id", "name", "email", "specialities", "created_at"],
   },
 ] as const;
 
