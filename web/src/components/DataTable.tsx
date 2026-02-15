@@ -38,6 +38,7 @@ interface DataTableProps {
   count: number;
   deletedKeys?: Set<string>;
   layout?: "table" | "queue";
+  onUpdate?: (row: Record<string, unknown>) => void;
 }
 
 function QueueCard({
@@ -45,11 +46,13 @@ function QueueCard({
   columns,
   isDeleted,
   index,
+  onUpdate,
 }: {
   row: Record<string, unknown>;
   columns: string[];
   isDeleted: boolean;
   index: number;
+  onUpdate?: (row: Record<string, unknown>) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
   const name = String(row["name"] ?? row["id"] ?? "");
@@ -94,6 +97,18 @@ function QueueCard({
                 <span className="text-[11px] font-mono break-all">{React.isValidElement(formatCell(row[col])) ? formatCell(row[col]) : String(row[col] ?? "")}</span>
               </div>
             ))}
+            {onUpdate && !isDeleted && (
+              <button
+                type="button"
+                className="mt-1 w-full text-[11px] font-mono px-2 py-0.5 border border-foreground/20 rounded hover:bg-foreground/10 transition-colors"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onUpdate(row);
+                }}
+              >
+                Update
+              </button>
+            )}
           </div>
         )}
       </div>
@@ -101,7 +116,7 @@ function QueueCard({
   );
 }
 
-export function DataTable({ title, columns, rows, count, deletedKeys, layout = "table" }: DataTableProps) {
+export function DataTable({ title, columns, rows, count, deletedKeys, layout = "table", onUpdate }: DataTableProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -140,7 +155,7 @@ export function DataTable({ title, columns, rows, count, deletedKeys, layout = "
                 const isDeleted = deletedKeys?.has(key) ?? false;
                 return (
                   <React.Fragment key={key}>
-                    <QueueCard row={row} columns={columns} isDeleted={isDeleted} index={rows.length - 1 - i} />
+                    <QueueCard row={row} columns={columns} isDeleted={isDeleted} index={rows.length - 1 - i} onUpdate={onUpdate} />
                     {i < rows.length - 1 && (
                       <svg width="20" height="16" viewBox="0 0 20 16" fill="none" className="shrink-0 text-muted-foreground/50 mx-0.5">
                         <path d="M0 8H16M16 8L10 2M16 8L10 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>

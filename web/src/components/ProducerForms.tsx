@@ -1,4 +1,4 @@
-import { type FormEvent, useState } from "react";
+import { type FormEvent, useEffect, useRef, useState } from "react";
 import {
   Card,
   CardContent,
@@ -11,21 +11,40 @@ import { Button } from "@/components/ui/button";
 import { createPractitioner, createSpeciality, deletePractitioner, deleteSpeciality } from "@/lib/api";
 import { toast } from "sonner";
 
-export function ProducerForms() {
+export type PractitionerPrefill = { id: string; name: string; email: string; specialityIds: string };
+
+interface ProducerFormsProps {
+  prefill?: PractitionerPrefill | null;
+  onPrefillConsumed?: () => void;
+}
+
+export function ProducerForms({ prefill, onPrefillConsumed }: ProducerFormsProps) {
   return (
     <div className="grid grid-cols-2 gap-4">
-      <PractitionerForm />
+      <PractitionerForm prefill={prefill} onPrefillConsumed={onPrefillConsumed} />
       <SpecialityForm />
       <TombstoneForm />
     </div>
   );
 }
 
-function PractitionerForm() {
+function PractitionerForm({ prefill, onPrefillConsumed }: { prefill?: PractitionerPrefill | null; onPrefillConsumed?: () => void }) {
   const [id, setId] = useState("");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [specialityIds, setSpecialityIds] = useState("");
+  const formRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (prefill) {
+      setId(prefill.id);
+      setName(prefill.name);
+      setEmail(prefill.email);
+      setSpecialityIds(prefill.specialityIds);
+      formRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      onPrefillConsumed?.();
+    }
+  }, [prefill]);
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
@@ -47,7 +66,7 @@ function PractitionerForm() {
   }
 
   return (
-    <Card>
+    <Card ref={formRef}>
       <CardHeader>
         <CardTitle>Practitioner</CardTitle>
       </CardHeader>

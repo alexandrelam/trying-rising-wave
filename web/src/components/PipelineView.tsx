@@ -24,7 +24,11 @@ const TABLES = [
   },
 ] as const;
 
-export function PipelineView() {
+interface PipelineViewProps {
+  onUpdate?: (data: { id: string; name: string; email: string; specialityIds: string }) => void;
+}
+
+export function PipelineView({ onUpdate }: PipelineViewProps) {
   const [data, setData] = useState<PipelineEvent>({});
 
   useEffect(() => {
@@ -58,6 +62,7 @@ export function PipelineView() {
           count={data[t.key]?.count ?? 0}
           deletedKeys={t.key === "practitioners_mv" ? deletedKeys : undefined}
           layout={t.layout}
+          onUpdate={t.key === "practitioners_mv" && onUpdate ? (row) => onUpdate({ id: String(row.id ?? ""), name: String(row.name ?? ""), email: String(row.email ?? ""), specialityIds: String(row.speciality_ids ?? "") }) : undefined}
         />
       ))}
       <EventLog events={eventLog} />
