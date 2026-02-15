@@ -4,12 +4,12 @@ import psycopg2
 SOURCES = [
     """
     CREATE SOURCE IF NOT EXISTS practitioners_source (id INT, name VARCHAR, email VARCHAR)
-    WITH (connector='kafka', topic='practitioners', properties.bootstrap.server='localhost:9092')
+    WITH (connector='kafka', topic='practitioners', properties.bootstrap.server='kafka:9092')
     FORMAT PLAIN ENCODE JSON
     """,
     """
     CREATE SOURCE IF NOT EXISTS specialities_source (practitioner_id INT, speciality VARCHAR)
-    WITH (connector='kafka', topic='specialities', properties.bootstrap.server='localhost:9092')
+    WITH (connector='kafka', topic='specialities', properties.bootstrap.server='kafka:9092')
     FORMAT PLAIN ENCODE JSON
     """,
 ]

@@ -38,7 +38,7 @@ def delivery_report(err, msg):
 
 
 def produce():
-    producer = Producer({"bootstrap.servers": "localhost:9092"})
+    producer = Producer({"bootstrap.servers": "localhost:29092"})
 
     print("Producing practitioners...")
     for p in PRACTITIONERS:

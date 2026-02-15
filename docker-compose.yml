@@ -3,13 +3,13 @@ services:
   kafka:
     image: apache/kafka:latest
     ports:
-      - "9092:9092"
+      - "29092:29092"
     environment:
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: broker,controller
-      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,PLAINTEXT_HOST://0.0.0.0:29092,CONTROLLER://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
@@ -59,7 +59,7 @@ services:
       - --meta-opts=--listen-addr 0.0.0.0:5690 --advertise-addr risingwave:5690 --sql-endpoint postgres://postgres@postgres:5432/metadata --state-store hummock+memory --data-directory hummock_001 --backend sql
       - --compute-opts=--listen-addr 0.0.0.0:5688 --advertise-addr risingwave:5688 --async-stack-trace verbose --parallelism 4 --total-memory-bytes 8589934592 --role both --meta-address http://0.0.0.0:5690
       - --frontend-opts=--listen-addr 0.0.0.0:4566 --advertise-addr risingwave:4566 --meta-addr http://0.0.0.0:5690
-      - --compactor-opts=--listen-addr 0.0.0.0:6660 --advertise-addr risingwave:6660 --meta-addr http://0.0.0.0:5690
+      - --compactor-opts=--listen-addr 0.0.0.0:6660 --advertise-addr risingwave:6660 --meta-address http://0.0.0.0:5690
     volumes:
       - risingwave-data:/data
     healthcheck:
