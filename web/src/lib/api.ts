@@ -10,6 +10,11 @@ export async function resetPipeline() {
   return res.json();
 }
 
+export async function seedPipeline() {
+  const res = await fetch(`${BASE}/pipeline/seed`, { method: "POST" });
+  return res.json();
+}
+
 export async function getPipelineStatus() {
   const res = await fetch(`${BASE}/pipeline/status`);
   return res.json();

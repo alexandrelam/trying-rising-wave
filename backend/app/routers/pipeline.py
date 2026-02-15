@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 
 from app.db import get_conn, query_rows
-from app.kafka import delete_topics
+from app.kafka import create_topics, delete_topics, produce_message
 
 router = APIRouter()
 
@@ -40,6 +40,7 @@ DROP_SQL = [
 
 @router.post("/setup")
 def setup_pipeline():
+    create_topics(["practitioners", "specialities"])
     conn = get_conn()
     cur = conn.cursor()
     for sql in SOURCES_SQL + MVS_SQL:
@@ -59,6 +60,38 @@ def reset_pipeline():
     conn.close()
     delete_topics(["practitioners", "specialities"])
     return {"status": "ok", "message": "Pipeline reset complete"}
+
+
+SEED_PRACTITIONERS = [
+    {"id": 1, "name": "Alice Smith", "email": "alice@example.com"},
+    {"id": 2, "name": "Bob Johnson", "email": "bob@example.com"},
+    {"id": 3, "name": "Carol Williams", "email": "carol@example.com"},
+    {"id": 4, "name": "David Brown", "email": "david@example.com"},
+    {"id": 5, "name": "Eve Davis", "email": "eve@example.com"},
+]
+
+SEED_SPECIALITIES = [
+    {"practitioner_id": 1, "speciality": "Cardiology"},
+    {"practitioner_id": 1, "speciality": "Internal Medicine"},
+    {"practitioner_id": 2, "speciality": "Dermatology"},
+    {"practitioner_id": 3, "speciality": "Neurology"},
+    {"practitioner_id": 3, "speciality": "Psychiatry"},
+    {"practitioner_id": 4, "speciality": "Orthopedics"},
+    {"practitioner_id": 5, "speciality": "Pediatrics"},
+    {"practitioner_id": 5, "speciality": "Cardiology"},
+]
+
+
+@router.post("/seed")
+def seed_pipeline():
+    for p in SEED_PRACTITIONERS:
+        produce_message("practitioners", str(p["id"]), p)
+    for s in SEED_SPECIALITIES:
+        produce_message("specialities", str(s["practitioner_id"]), s)
+    return {
+        "status": "ok",
+        "message": f"Seeded {len(SEED_PRACTITIONERS)} practitioners and {len(SEED_SPECIALITIES)} specialities",
+    }
 
 
 @router.get("/status")

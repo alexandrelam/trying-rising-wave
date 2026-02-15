@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { setupPipeline, resetPipeline, getPipelineStatus } from "@/lib/api";
+import { setupPipeline, resetPipeline, seedPipeline, getPipelineStatus } from "@/lib/api";
 import { toast } from "sonner";
 
 export function PipelineControls() {
@@ -27,6 +27,18 @@ export function PipelineControls() {
       await refreshStatus();
     } catch {
       toast.error("Setup failed");
+    } finally {
+      setLoading(null);
+    }
+  }
+
+  async function handleSeed() {
+    setLoading("seed");
+    try {
+      await seedPipeline();
+      toast.success("Sample data ingested");
+    } catch {
+      toast.error("Seed failed");
     } finally {
       setLoading(null);
     }
@@ -62,6 +74,9 @@ export function PipelineControls() {
       )}
       <Button onClick={handleSetup} disabled={loading !== null}>
         {loading === "setup" ? "Setting up…" : "Setup"}
+      </Button>
+      <Button variant="outline" onClick={handleSeed} disabled={loading !== null}>
+        {loading === "seed" ? "Seeding…" : "Seed Data"}
       </Button>
       <Button
         variant="destructive"
