@@ -5,6 +5,7 @@ from fastapi import APIRouter
 from sse_starlette.sse import EventSourceResponse
 
 from app.db import get_conn
+from app.event_log import get_events
 
 router = APIRouter()
 
@@ -42,6 +43,7 @@ async def event_generator():
             data = get_counts_and_latest()
         except Exception:
             data = {}
+        data["event_log"] = get_events()
         yield {"event": "pipeline", "data": json.dumps(data)}
         await asyncio.sleep(2)
 

@@ -45,10 +45,23 @@ export async function createSpeciality(data: {
   return res.json();
 }
 
+export async function deletePractitioner(id: number) {
+  const res = await fetch(`${BASE}/practitioners/${id}`, { method: "DELETE" });
+  return res.json();
+}
+
+export type EventLogEntry = {
+  type: "INSERT" | "TOMBSTONE";
+  topic: string;
+  key: string;
+  value: Record<string, unknown> | null;
+  timestamp: string;
+};
+
 export type PipelineEvent = Record<
   string,
   { count: number; latest: Record<string, unknown>[] }
->;
+> & { event_log?: EventLogEntry[] };
 
 export function subscribeEvents(callback: (data: PipelineEvent) => void) {
   const es = new EventSource(`${BASE}/events`);

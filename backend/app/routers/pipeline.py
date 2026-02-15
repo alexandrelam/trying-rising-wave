@@ -40,7 +40,8 @@ DROP_SQL = [
 
 @router.post("/setup")
 def setup_pipeline():
-    create_topics(["practitioners", "specialities"])
+    create_topics(["practitioners"], config={"cleanup.policy": "compact"})
+    create_topics(["specialities"])
     conn = get_conn()
     cur = conn.cursor()
     for sql in SOURCES_SQL + MVS_SQL:

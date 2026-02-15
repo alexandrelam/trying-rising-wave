@@ -8,7 +8,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { createPractitioner, createSpeciality } from "@/lib/api";
+import { createPractitioner, createSpeciality, deletePractitioner } from "@/lib/api";
 import { toast } from "sonner";
 
 export function ProducerForms() {
@@ -16,6 +16,7 @@ export function ProducerForms() {
     <div className="grid grid-cols-2 gap-4">
       <PractitionerForm />
       <SpecialityForm />
+      <TombstoneForm />
     </div>
   );
 }
@@ -76,6 +77,46 @@ function PractitionerForm() {
           </div>
           <Button type="submit" className="w-full">
             Produce
+          </Button>
+        </form>
+      </CardContent>
+    </Card>
+  );
+}
+
+function TombstoneForm() {
+  const [id, setId] = useState("");
+
+  async function onSubmit(e: FormEvent) {
+    e.preventDefault();
+    try {
+      await deletePractitioner(Number(id));
+      toast.success(`Tombstone produced for practitioner ${id}`);
+      setId("");
+    } catch {
+      toast.error("Failed to produce tombstone");
+    }
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Delete (Tombstone)</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={onSubmit} className="space-y-3">
+          <div>
+            <Label htmlFor="t-id">Practitioner ID</Label>
+            <Input
+              id="t-id"
+              type="number"
+              value={id}
+              onChange={(e) => setId(e.target.value)}
+              required
+            />
+          </div>
+          <Button type="submit" variant="destructive" className="w-full">
+            Delete (Tombstone)
           </Button>
         </form>
       </CardContent>
