@@ -137,7 +137,7 @@ def view_practitioners():
 
 @router.get("/views/specialities")
 def view_specialities():
-    return query_rows("SELECT id, name FROM specialities_mv ORDER BY name")
+    return query_rows("SELECT id, name FROM specialities_mv ORDER BY id DESC")
 
 
 @router.get("/views/joined")

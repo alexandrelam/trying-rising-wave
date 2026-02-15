@@ -17,7 +17,7 @@ def get_counts_and_latest():
 
     tables = {
         "practitioners_mv": "SELECT id, name, email, speciality_ids, created_at FROM practitioners_mv ORDER BY created_at DESC",
-        "specialities_mv": "SELECT id, name FROM specialities_mv ORDER BY name",
+        "specialities_mv": "SELECT id, name FROM specialities_mv ORDER BY id DESC",
         "practitioners_with_specialities": "SELECT id, name, email, specialities, created_at FROM practitioners_with_specialities ORDER BY created_at DESC",
     }
 
