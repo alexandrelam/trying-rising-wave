@@ -17,7 +17,7 @@ const TABLES = [
   {
     key: "practitioners_with_specialities",
     title: "Joined View",
-    columns: ["id", "name", "email", "speciality"],
+    columns: ["id", "name", "email", "specialities"],
   },
 ] as const;
 

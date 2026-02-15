@@ -24,9 +24,10 @@ MVS_SQL = [
     "CREATE MATERIALIZED VIEW IF NOT EXISTS specialities_mv AS SELECT * FROM specialities_source",
     """
     CREATE MATERIALIZED VIEW IF NOT EXISTS practitioners_with_specialities AS
-    SELECT p.id, p.name, p.email, s.speciality
+    SELECT p.id, p.name, p.email, jsonb_agg(s.speciality ORDER BY s.speciality) AS specialities
     FROM practitioners_mv p
     JOIN specialities_mv s ON p.id = s.practitioner_id
+    GROUP BY p.id, p.name, p.email
     """,
 ]
 
@@ -133,5 +134,5 @@ def view_specialities():
 @router.get("/views/joined")
 def view_joined():
     return query_rows(
-        "SELECT id, name, email, speciality FROM practitioners_with_specialities ORDER BY id, speciality"
+        "SELECT id, name, email, specialities FROM practitioners_with_specialities ORDER BY id"
     )

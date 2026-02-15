@@ -1,3 +1,4 @@
+import React from "react";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -13,6 +14,22 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+
+function formatCell(value: unknown): React.ReactNode {
+  if (value == null) return "";
+  if (Array.isArray(value)) {
+    return (
+      <div className="flex flex-wrap gap-1">
+        {value.map((item, i) => (
+          <Badge key={i} variant="secondary" className="text-xs">
+            {String(item)}
+          </Badge>
+        ))}
+      </div>
+    );
+  }
+  return String(value);
+}
 
 interface DataTableProps {
   title: string;
@@ -52,7 +69,7 @@ export function DataTable({ title, columns, rows, count, deletedKeys }: DataTabl
                         key={col}
                         className={isDeleted ? "line-through" : ""}
                       >
-                        {String(row[col] ?? "")}
+                        {formatCell(row[col])}
                       </TableCell>
                     ))}
                     {isDeleted && (
