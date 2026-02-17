@@ -1,7 +1,9 @@
 import os
+import time
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from prometheus_client import Counter, Histogram, make_asgi_app
 
 from app.routers import practitioners, specialities, pipeline, events
 
@@ -14,6 +16,36 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+REQUEST_COUNT = Counter(
+    "http_requests_total",
+    "Total HTTP requests",
+    ["method", "path", "status_code"],
+)
+REQUEST_DURATION = Histogram(
+    "http_request_duration_seconds",
+    "HTTP request duration in seconds",
+    ["method", "path"],
+)
+
+
+@app.middleware("http")
+async def record_metrics(request: Request, call_next):
+    start = time.perf_counter()
+    response = await call_next(request)
+    duration = time.perf_counter() - start
+    path = request.url.path
+    REQUEST_COUNT.labels(request.method, path, response.status_code).inc()
+    REQUEST_DURATION.labels(request.method, path).observe(duration)
+    return response
+
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}
+
+
+app.mount("/metrics", make_asgi_app())
 
 app.include_router(practitioners.router, prefix="/api")
 app.include_router(specialities.router, prefix="/api")

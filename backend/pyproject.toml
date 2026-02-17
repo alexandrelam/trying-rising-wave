@@ -8,4 +8,5 @@ dependencies = [
     "confluent-kafka",
     "psycopg2-binary",
     "sse-starlette",
+    "prometheus-client>=0.21",
 ]
