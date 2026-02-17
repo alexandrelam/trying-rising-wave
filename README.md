@@ -47,7 +47,7 @@ uv sync
 uv run uvicorn app.main:app --reload
 ```
 
-The API runs at http://localhost:8000.
+The API runs at http://localhost:3007.
 
 ### 3. Start the frontend
 
@@ -74,7 +74,7 @@ The dev server runs at http://localhost:5173.
 | PostgreSQL (metadata)| 8432  |
 | RisingWave SQL       | 4566  |
 | RisingWave dashboard | 5691  |
-| Backend API          | 8000  |
+| Backend API          | 3007  |
 | Frontend dev server  | 5173  |
 
 ### Experiments (standalone scripts)

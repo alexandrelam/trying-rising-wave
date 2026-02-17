@@ -12,7 +12,7 @@ Three separate components, each with its own dependency management:
 
 - **`experiments/kafka_risingwave/`** — Standalone Python scripts (POC). Uses root `pyproject.toml` (Python ≥3.14). Streams practitioner/speciality data through Kafka into RisingWave, creates materialized views with streaming joins.
 - **`backend/`** — FastAPI API server. Has its own `pyproject.toml` (Python ≥3.11). Routers: `practitioners`, `specialities`, `pipeline`, `events` (SSE). Talks to Kafka (produce) and RisingWave (query via psycopg2).
-- **`web/`** — React + TypeScript frontend (Vite, Tailwind v4, shadcn/ui). Communicates with backend at `localhost:8000`. Key components: `PipelineView`, `DataTable`, `ProducerForms`, `PipelineControls`.
+- **`web/`** — React + TypeScript frontend (Vite, Tailwind v4, shadcn/ui). Communicates with backend at `localhost:3007`. Key components: `PipelineView`, `DataTable`, `ProducerForms`, `PipelineControls`.
 
 ## Commands
 
@@ -27,7 +27,7 @@ Three separate components, each with its own dependency management:
 | PostgreSQL (metadata) | 8432 |
 | RisingWave SQL | 4566 |
 | RisingWave dashboard | 5691 |
-| Backend API | 8000 |
+| Backend API | 3007 |
 | Frontend dev | 5173 |
 
 ### Experiments (root project)
