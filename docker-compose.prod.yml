@@ -74,8 +74,8 @@ services:
       RW_PORT: "4566"
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       CORS_ORIGINS: "*"
-    expose:
-      - "3007"
+    ports:
+      - "3007:3007"
 
   frontend:
     build:
