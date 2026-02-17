@@ -3,7 +3,8 @@ import time
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from prometheus_client import Counter, Histogram, make_asgi_app
+from fastapi.responses import Response
+from prometheus_client import Counter, Histogram, CONTENT_TYPE_LATEST, generate_latest
 
 from app.routers import practitioners, specialities, pipeline, events
 
@@ -45,7 +46,9 @@ def health():
     return {"status": "ok"}
 
 
-app.mount("/metrics", make_asgi_app())
+@app.get("/metrics")
+def metrics():
+    return Response(generate_latest(), media_type=CONTENT_TYPE_LATEST)
 
 app.include_router(practitioners.router, prefix="/api")
 app.include_router(specialities.router, prefix="/api")
